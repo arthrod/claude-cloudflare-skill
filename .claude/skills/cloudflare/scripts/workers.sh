@@ -65,12 +65,24 @@ get_worker() {
     load_credentials
 
     local url="https://api.cloudflare.com/client/v4/accounts/$account_id/workers/scripts/$script_name"
+    local response
 
     if [[ -n "$CF_API_TOKEN" ]]; then
-        curl -s "$url" -H "Authorization: Bearer $CF_API_TOKEN"
+        response=$(curl -s "$url" -H "Authorization: Bearer $CF_API_TOKEN")
     else
-        curl -s "$url" -H "X-Auth-Key: $CF_GLOBAL_KEY"
+        response=$(curl -s "$url" -H "X-Auth-Key: $CF_GLOBAL_KEY")
     fi
+
+    # Check if response is JSON error (API returns JSON errors, script content is plain text)
+    if echo "$response" | jq -e '.success == false' >/dev/null 2>&1; then
+        local errors
+        errors=$(echo "$response" | jq -r '.errors[] | "[\(.code)] \(.message)"' 2>/dev/null)
+        echo -e "${RED}API Error:${NC}" >&2
+        echo "$errors" >&2
+        return 1
+    fi
+
+    echo "$response"
 }
 
 # Deploy worker

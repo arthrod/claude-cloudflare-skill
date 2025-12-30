@@ -153,6 +153,24 @@ delete_rule() {
     fi
 }
 
+# Validate IP address format (IPv4, IPv6, or IPv4 CIDR)
+validate_ip() {
+    local ip="$1"
+    # IPv4 pattern (strict: 0-255 per octet)
+    if [[ "$ip" =~ ^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$ ]]; then
+        return 0
+    fi
+    # IPv6 pattern (simplified - allows common formats)
+    if [[ "$ip" =~ ^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$ ]]; then
+        return 0
+    fi
+    # IPv4 CIDR pattern (strict IPv4 + prefix 0-32)
+    if [[ "$ip" =~ ^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})/([0-9]|[12][0-9]|3[0-2])$ ]]; then
+        return 0
+    fi
+    return 1
+}
+
 # Quick block IP
 block_ip() {
     local zone_id="$1"
@@ -161,6 +179,11 @@ block_ip() {
 
     if [[ -z "$zone_id" || -z "$ip" ]]; then
         echo -e "${RED}Error: Zone ID and IP required${NC}" >&2
+        return 2
+    fi
+
+    if ! validate_ip "$ip"; then
+        echo -e "${RED}Error: Invalid IP address format: $ip${NC}" >&2
         return 2
     fi
 
@@ -175,6 +198,11 @@ allow_ip() {
 
     if [[ -z "$zone_id" || -z "$ip" ]]; then
         echo -e "${RED}Error: Zone ID and IP required${NC}" >&2
+        return 2
+    fi
+
+    if ! validate_ip "$ip"; then
+        echo -e "${RED}Error: Invalid IP address format: $ip${NC}" >&2
         return 2
     fi
 

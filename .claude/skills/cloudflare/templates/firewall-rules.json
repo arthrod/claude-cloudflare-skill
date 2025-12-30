@@ -36,19 +36,19 @@
       },
       "description": "Block specific countries"
     },
-    "rate_limit_api": {
+    "require_api_key": {
       "action": "challenge",
       "filter": {
         "expression": "(http.request.uri.path contains \"/api/\") and (not http.request.headers[\"x-api-key\"])"
       },
-      "description": "Challenge API requests without key"
+      "description": "Challenge API requests without API key (Note: For actual rate limiting, use Cloudflare Rate Limiting Rules)"
     },
-    "block_tor_exit_nodes": {
+    "challenge_high_threat_ips": {
       "action": "challenge",
       "filter": {
         "expression": "(cf.threat_score gt 10)"
       },
-      "description": "Challenge high threat score IPs"
+      "description": "Challenge IPs with high threat score (includes various threat sources, not just Tor)"
     },
     "protect_login": {
       "action": "managed_challenge",

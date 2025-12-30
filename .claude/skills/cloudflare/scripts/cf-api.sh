@@ -10,7 +10,7 @@ set -e
 
 # Configuration
 CF_API_BASE="https://api.cloudflare.com/client/v4"
-CF_CREDS_FILE="$HOME/cloudflare_global_key"
+CF_CREDS_FILE="${CF_CREDS_FILE:-$HOME/cloudflare_global_key}"
 
 # Colors for output
 RED='\033[0;31m'

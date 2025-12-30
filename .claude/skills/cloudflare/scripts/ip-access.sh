@@ -64,68 +64,96 @@ create_rule() {
     fi
 }
 
-# Block IP
+# Block IP/range/ASN/country
 block() {
     local zone_id="$1"
     local value="$2"
     local notes="${3:-Blocked}"
 
     if [[ -z "$zone_id" || -z "$value" ]]; then
-        echo -e "${RED}Error: Zone ID and IP/range required${NC}" >&2
+        echo -e "${RED}Error: Zone ID and IP/range/ASN/country required${NC}" >&2
         return 2
     fi
 
+    # Auto-detect target type
     local target="ip"
+    # Normalize to uppercase for country detection
+    local upper_value
+    upper_value=$(echo "$value" | tr '[:lower:]' '[:upper:]')
+
     if [[ "$value" == *"/"* ]]; then
         target="ip_range"
-    elif [[ "$value" == "AS"* ]]; then
+    elif [[ "$upper_value" == "AS"* ]]; then
         target="asn"
-    elif [[ ${#value} -eq 2 ]]; then
+        value="$upper_value"
+    elif [[ ${#value} -eq 2 && "$upper_value" =~ ^[A-Z]{2}$ ]]; then
+        # Only treat as country if exactly 2 letters (ISO 3166-1 alpha-2)
         target="country"
+        value="$upper_value"
     fi
 
     echo -e "${BLUE}Blocking $target: $value${NC}"
     create_rule "$zone_id" "block" "$target" "$value" "$notes"
 }
 
-# Allow/Whitelist IP
+# Allow/Whitelist IP/range/ASN/country
 allow() {
     local zone_id="$1"
     local value="$2"
     local notes="${3:-Allowed}"
 
     if [[ -z "$zone_id" || -z "$value" ]]; then
-        echo -e "${RED}Error: Zone ID and IP/range required${NC}" >&2
+        echo -e "${RED}Error: Zone ID and IP/range/ASN/country required${NC}" >&2
         return 2
     fi
 
+    # Auto-detect target type
     local target="ip"
+    # Normalize to uppercase for country detection
+    local upper_value
+    upper_value=$(echo "$value" | tr '[:lower:]' '[:upper:]')
+
     if [[ "$value" == *"/"* ]]; then
         target="ip_range"
-    elif [[ "$value" == "AS"* ]]; then
+    elif [[ "$upper_value" == "AS"* ]]; then
         target="asn"
-    elif [[ ${#value} -eq 2 ]]; then
+        value="$upper_value"
+    elif [[ ${#value} -eq 2 && "$upper_value" =~ ^[A-Z]{2}$ ]]; then
+        # Only treat as country if exactly 2 letters (ISO 3166-1 alpha-2)
         target="country"
+        value="$upper_value"
     fi
 
     echo -e "${BLUE}Allowing $target: $value${NC}"
     create_rule "$zone_id" "whitelist" "$target" "$value" "$notes"
 }
 
-# Challenge IP
+# Challenge IP/range/ASN/country
 challenge() {
     local zone_id="$1"
     local value="$2"
     local notes="${3:-Challenged}"
 
     if [[ -z "$zone_id" || -z "$value" ]]; then
-        echo -e "${RED}Error: Zone ID and IP/range required${NC}" >&2
+        echo -e "${RED}Error: Zone ID and IP/range/ASN/country required${NC}" >&2
         return 2
     fi
 
+    # Auto-detect target type (matches block/allow logic)
     local target="ip"
+    # Normalize to uppercase for country detection
+    local upper_value
+    upper_value=$(echo "$value" | tr '[:lower:]' '[:upper:]')
+
     if [[ "$value" == *"/"* ]]; then
         target="ip_range"
+    elif [[ "$upper_value" == "AS"* ]]; then
+        target="asn"
+        value="$upper_value"
+    elif [[ ${#value} -eq 2 && "$upper_value" =~ ^[A-Z]{2}$ ]]; then
+        # Only treat as country if exactly 2 letters (ISO 3166-1 alpha-2)
+        target="country"
+        value="$upper_value"
     fi
 
     echo -e "${BLUE}Challenging $target: $value${NC}"

@@ -13,9 +13,15 @@ This skill provides comprehensive Cloudflare infrastructure management capabilit
 
 ## Authentication
 
-API credentials are stored at `~/cloudflare_global_key`. The file contains:
+API credentials are stored at `~/cloudflare_global_key` (or override via `CF_CREDS_FILE` environment variable). The file contains:
 - Global API Key for legacy authentication
 - API Token (Bearer token) for modern authentication
+
+**Security Best Practices**:
+- Ensure file permissions are restricted: `chmod 600 ~/cloudflare_global_key`
+- Consider using environment variables or credential managers (e.g., `pass`, 1Password, system keychains) for production environments
+- Rotate API tokens regularly (recommended: every 90 days)
+- Use API tokens with minimal required permissions rather than Global API keys
 
 **Recommended**: Use the Bearer token for API calls:
 ```bash
@@ -216,14 +222,14 @@ The `templates/` directory contains JSON templates for common operations:
 
 ## Error Handling
 
-All scripts return appropriate exit codes:
+All scripts follow a consistent error code convention:
 - 0: Success
-- 1: API error (check stderr for details)
-- 2: Invalid arguments
-- 3: Authentication error
-- 4: Resource not found
+- 1: API error (check stderr for Cloudflare error code and message)
+- 2: Invalid arguments (missing or malformed parameters)
+- 3: Authentication error (invalid or missing credentials)
+- 4: Resource not found (zone, record, or rule doesn't exist)
 
-Error responses include the Cloudflare error code and message for debugging.
+**Note**: This is the recommended error-handling standard that all scripts in this skill implement. Error responses include the Cloudflare error code and message for debugging.
 
 ## Best Practices
 
