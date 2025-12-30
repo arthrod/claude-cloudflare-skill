@@ -63,9 +63,6 @@ list_records() {
     if check_response "$response"; then
         echo "$response" | jq -r '
             .result[] |
-            "[\(.id)] \(.type | ljust(6)) \(.name | ljust(40)) -> \(.content) (TTL: \(.ttl), Proxied: \(.proxied))"
-        ' 2>/dev/null || echo "$response" | jq -r '
-            .result[] |
             "[\(.id)] \(.type) \(.name) -> \(.content) (TTL: \(.ttl), Proxied: \(.proxied))"
         '
 
@@ -246,42 +243,37 @@ update_record() {
         esac
     done
 
-    # Build update data
-    local data="{"
-    local first=true
+    # Build update data using jq for safe JSON construction
+    local data
+    local jq_args=()
+    local jq_filter='{}'
 
     if [[ -n "$type" ]]; then
-        [[ "$first" != "true" ]] && data+=","
-        data+="\"type\":\"$type\""
-        first=false
+        jq_args+=(--arg type "$type")
+        jq_filter="$jq_filter + {type: \$type}"
     fi
     if [[ -n "$name" ]]; then
-        [[ "$first" != "true" ]] && data+=","
-        data+="\"name\":\"$name\""
-        first=false
+        jq_args+=(--arg name "$name")
+        jq_filter="$jq_filter + {name: \$name}"
     fi
     if [[ -n "$content" ]]; then
-        [[ "$first" != "true" ]] && data+=","
-        data+="\"content\":\"$content\""
-        first=false
+        jq_args+=(--arg content "$content")
+        jq_filter="$jq_filter + {content: \$content}"
     fi
     if [[ -n "$ttl" ]]; then
-        [[ "$first" != "true" ]] && data+=","
-        data+="\"ttl\":$ttl"
-        first=false
+        jq_args+=(--argjson ttl "$ttl")
+        jq_filter="$jq_filter + {ttl: \$ttl}"
     fi
     if [[ -n "$proxied" ]]; then
-        [[ "$first" != "true" ]] && data+=","
-        data+="\"proxied\":$proxied"
-        first=false
+        jq_args+=(--argjson proxied "$proxied")
+        jq_filter="$jq_filter + {proxied: \$proxied}"
     fi
     if [[ -n "$priority" ]]; then
-        [[ "$first" != "true" ]] && data+=","
-        data+="\"priority\":$priority"
-        first=false
+        jq_args+=(--argjson priority "$priority")
+        jq_filter="$jq_filter + {priority: \$priority}"
     fi
 
-    data+="}"
+    data=$(jq -n "${jq_args[@]}" "$jq_filter")
 
     echo -e "${BLUE}Updating DNS record: $record_id${NC}"
     local response

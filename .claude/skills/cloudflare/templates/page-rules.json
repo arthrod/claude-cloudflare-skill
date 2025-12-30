@@ -1,5 +1,5 @@
 {
-  "description": "Common page rule configurations",
+  "description": "Common page rule configurations. Note: Each rule should have a unique priority to ensure deterministic execution order.",
   "rules": {
     "cache_static_assets": {
       "targets": [
@@ -55,7 +55,7 @@
           }
         }
       ],
-      "priority": 1,
+      "priority": 3,
       "status": "active"
     },
     "force_https": {
@@ -71,7 +71,7 @@
       "actions": [
         {"id": "always_use_https"}
       ],
-      "priority": 1,
+      "priority": 4,
       "status": "active"
     },
     "cache_images": {
@@ -89,7 +89,7 @@
         {"id": "edge_cache_ttl", "value": 604800},
         {"id": "polish", "value": "lossless"}
       ],
-      "priority": 3,
+      "priority": 5,
       "status": "active"
     },
     "security_headers": {
