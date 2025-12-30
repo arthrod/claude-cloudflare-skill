@@ -157,6 +157,81 @@ All scripts are located in the `scripts/` directory and use the credentials from
 ./scripts/workers.sh delete <script_name>
 ```
 
+## OpenNext Cloudflare (Next.js Deployments)
+
+For deploying Next.js applications to Cloudflare Workers, use the `opennextjs-cloudflare` CLI instead of direct wrangler commands.
+
+**Documentation**: https://opennext.js.org/cloudflare
+**GitHub**: https://github.com/opennextjs/opennextjs-cloudflare
+**Discord**: https://discord.gg/opennext
+
+### CLI Commands
+
+The `opennextjs-cloudflare` CLI supports the following commands:
+
+#### build
+Builds the Next.js application and runs Cloudflare-specific build steps:
+```bash
+pnpm opennextjs-cloudflare build
+# With options
+pnpm opennextjs-cloudflare build --skipNextBuild --noMinify
+# With wrangler options
+pnpm opennextjs-cloudflare build --config=/path/to/wrangler.jsonc --env=prod
+```
+
+#### populateCache
+Populates the configured Open Next cache components:
+```bash
+# Populate local bindings (for local development)
+pnpm opennextjs-cloudflare populateCache local
+
+# Populate remote bindings (for deployed application)
+pnpm opennextjs-cloudflare populateCache remote
+```
+
+**Note**: This command is implicitly called by `preview`, `deploy`, and `upload` commands.
+
+**R2 Batch Uploads** (v1.13.0+): Supported out of the box for `preview` and `deploy`.
+
+For versions before 1.13.0, R2 batching via rclone requires:
+- `R2_ACCESS_KEY_ID`: Access key ID of the R2 API token
+- `R2_SECRET_ACCESS_KEY`: Secret access key of the R2 API token
+- `CLOUDFLARE_ACCOUNT_ID`: Account ID where the R2 bucket is located
+
+#### preview
+Populates local cache and launches a local development server:
+```bash
+pnpm opennextjs-cloudflare preview
+```
+
+#### deploy
+Populates remote cache and deploys to Cloudflare (application serves immediately):
+```bash
+pnpm opennextjs-cloudflare deploy
+```
+
+#### upload
+Populates remote cache and uploads a version without serving (for gradual deployments):
+```bash
+pnpm opennextjs-cloudflare upload
+```
+
+### Getting Help
+```bash
+# List all commands
+pnpm opennextjs-cloudflare
+
+# Get help for a specific command
+pnpm opennextjs-cloudflare <command> --help
+```
+
+### Important Notes
+
+- **Do NOT use wrangler commands directly** unless documented or you know what you're doing
+- Most commands accept wrangler options (e.g., `--config`, `--env`)
+- Compatibility date should be set to `2025-03-07` or later
+- Set `compatibility_flags = ["nodejs_compat"]` in wrangler.jsonc
+
 ## Common Workflows
 
 ### Setting Up a New Domain
