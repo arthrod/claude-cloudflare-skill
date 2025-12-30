@@ -87,6 +87,7 @@ You are an advanced assistant specialized in generating Cloudflare Workers code.
   "observability": {
     // Enable logging by default
     "enabled": true,
+    "head_sampling_rate": 1
    }
 }
 </code>
@@ -207,7 +208,7 @@ const [client, server] = Object.values(webSocketPair);
 
     },
 
-    async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void | Promise<void> {
+    async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
      // Upon receiving a message from the client, reply with the same message,
      // but will prefix the message with "[Durable Object]: " and return the
      // total number of connections.
@@ -216,12 +217,12 @@ const [client, server] = Object.values(webSocketPair);
      );
     },
 
-    async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean) void | Promise<void> {
+    async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
      // If the client closes the connection, the runtime will invoke the webSocketClose() handler.
      ws.close(code, "Durable Object is closing WebSocket");
     },
 
-    async webSocketError(ws: WebSocket, error: unknown): void | Promise<void> {
+    async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
      console.error("WebSocket error:", error);
      ws.close(1011, "WebSocket error");
     }
@@ -292,7 +293,7 @@ async fetch(request) {
 // If there is no alarm currently set, set one for 10 seconds from now
 let currentAlarm = await this.storage.getAlarm();
 if (currentAlarm == null) {
-this.storage.setAlarm(Date.now() + 10 \_ SECONDS);
+this.storage.setAlarm(Date.now() + 10 * SECONDS);
 }
 }
 async alarm(alarmInfo) {
@@ -300,11 +301,11 @@ async alarm(alarmInfo) {
 // You can use this to do work, read from the Storage API, make HTTP calls
 // and set future alarms to run using this.storage.setAlarm() from within this handler.
 if (alarmInfo?.retryCount != 0) {
-console.log("This alarm event has been attempted ${alarmInfo?.retryCount} times before.");
+console.log(`This alarm event has been attempted ${alarmInfo?.retryCount} times before.`);
 }
 
 // Set a new alarm for 10 seconds from now before exiting the handler
-this.storage.setAlarm(Date.now() + 10 \_ SECONDS);
+this.storage.setAlarm(Date.now() + 10 * SECONDS);
 }
 }
 
@@ -317,14 +318,14 @@ this.storage.setAlarm(Date.now() + 10 \_ SECONDS);
     "bindings": [
       {
         "name": "ALARM_EXAMPLE",
-        "class_name": "DurableObjectAlarm"
+        "class_name": "AlarmExample"
       }
     ]
   },
   "migrations": [
     {
       "tag": "v1",
-      "new_classes": ["DurableObjectAlarm"]
+      "new_classes": ["AlarmExample"]
     }
   ]
 }
@@ -750,8 +751,7 @@ let userId = url.searchParams.get("userId");
      return Response.json({
       hello: "world",
      });
-    ,
-
+  },
 };
 
 </code>
@@ -819,7 +819,7 @@ export default {
 
     if (url) {
       url = new URL(url).toString(); // normalize
-      const browser = await puppeteer.launch(env.MYBROWSER);
+      const browser = await puppeteer.launch(env.BROWSER_RENDERING);
       const page = await browser.newPage();
       await page.goto(url);
       // Parse the page content
@@ -903,7 +903,7 @@ export default {
 {
   "name": "my-app",
     "main": "src/index.ts",
-  "compatibility_date": "<TBD>",
+  "compatibility_date": "2025-02-11",
     "assets": { "directory": "./public/", "not_found_handling": "single-page-application", "binding": "ASSETS" },
   "observability": {
     "enabled": true
@@ -920,7 +920,6 @@ export default {
 </example>
 
 <example id="agents">
-<code language="typescript">
 <description>
 Build an AI Agent on Cloudflare Workers, using the agents, and the state management and syncing APIs built into the agents.
 </description>
@@ -1096,7 +1095,7 @@ export class AIAgent extends Agent {
 
     // Run and orchestrate Workflows from Agents
   async runWorkflow(data) {
-     let instance = await env.MY_WORKFLOW.create({
+     let instance = await this.env.MY_WORKFLOW.create({
        id: data.id,
        params: data,
      })
@@ -1280,7 +1279,7 @@ export default {
         ],
             // Use the `response_format` option to request a structured JSON output
         response_format: {
-                // Set json_schema and provide ra schema, or json_object and parse it yourself
+                // Set json_schema and provide a schema, or json_object and parse it yourself
           type: 'json_schema',
           schema: CalendarEventSchema, // provide a schema
         },
@@ -1340,17 +1339,17 @@ export class WebSocketHibernationServer extends DurableObject {
     });
 },
 
-async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void | Promise<void> {
+async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
   // Invoked on each WebSocket message.
   ws.send(message)
 },
 
-async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean) void | Promise<void> {
+async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
   // Invoked when a client closes the connection.
   ws.close(code, "<message>");
 },
 
-async webSocketError(ws: WebSocket, error: unknown): void | Promise<void> {
+async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
   // Handle WebSocket errors
 }
 }
