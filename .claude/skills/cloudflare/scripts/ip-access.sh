@@ -77,13 +77,19 @@ block() {
 
     # Auto-detect target type
     local target="ip"
+    # Normalize to uppercase for country detection
+    local upper_value
+    upper_value=$(echo "$value" | tr '[:lower:]' '[:upper:]')
+
     if [[ "$value" == *"/"* ]]; then
         target="ip_range"
-    elif [[ "$value" == "AS"* ]]; then
+    elif [[ "$upper_value" == "AS"* ]]; then
         target="asn"
-    elif [[ ${#value} -eq 2 && "$value" =~ ^[A-Z]{2}$ ]]; then
-        # Only treat as country if exactly 2 uppercase letters (ISO 3166-1 alpha-2)
+        value="$upper_value"
+    elif [[ ${#value} -eq 2 && "$upper_value" =~ ^[A-Z]{2}$ ]]; then
+        # Only treat as country if exactly 2 letters (ISO 3166-1 alpha-2)
         target="country"
+        value="$upper_value"
     fi
 
     echo -e "${BLUE}Blocking $target: $value${NC}"
@@ -103,13 +109,19 @@ allow() {
 
     # Auto-detect target type
     local target="ip"
+    # Normalize to uppercase for country detection
+    local upper_value
+    upper_value=$(echo "$value" | tr '[:lower:]' '[:upper:]')
+
     if [[ "$value" == *"/"* ]]; then
         target="ip_range"
-    elif [[ "$value" == "AS"* ]]; then
+    elif [[ "$upper_value" == "AS"* ]]; then
         target="asn"
-    elif [[ ${#value} -eq 2 && "$value" =~ ^[A-Z]{2}$ ]]; then
-        # Only treat as country if exactly 2 uppercase letters (ISO 3166-1 alpha-2)
+        value="$upper_value"
+    elif [[ ${#value} -eq 2 && "$upper_value" =~ ^[A-Z]{2}$ ]]; then
+        # Only treat as country if exactly 2 letters (ISO 3166-1 alpha-2)
         target="country"
+        value="$upper_value"
     fi
 
     echo -e "${BLUE}Allowing $target: $value${NC}"
@@ -129,13 +141,19 @@ challenge() {
 
     # Auto-detect target type (matches block/allow logic)
     local target="ip"
+    # Normalize to uppercase for country detection
+    local upper_value
+    upper_value=$(echo "$value" | tr '[:lower:]' '[:upper:]')
+
     if [[ "$value" == *"/"* ]]; then
         target="ip_range"
-    elif [[ "$value" == "AS"* ]]; then
+    elif [[ "$upper_value" == "AS"* ]]; then
         target="asn"
-    elif [[ ${#value} -eq 2 && "$value" =~ ^[A-Z]{2}$ ]]; then
-        # Only treat as country if exactly 2 uppercase letters (ISO 3166-1 alpha-2)
+        value="$upper_value"
+    elif [[ ${#value} -eq 2 && "$upper_value" =~ ^[A-Z]{2}$ ]]; then
+        # Only treat as country if exactly 2 letters (ISO 3166-1 alpha-2)
         target="country"
+        value="$upper_value"
     fi
 
     echo -e "${BLUE}Challenging $target: $value${NC}"

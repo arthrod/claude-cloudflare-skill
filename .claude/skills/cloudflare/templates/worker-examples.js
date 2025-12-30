@@ -118,7 +118,8 @@ export default {
       url.pathname = '/variant-b'
     }
 
-    const response = await fetch(url.toString(), request)
+    const newRequest = new Request(url.toString(), request)
+    const response = await fetch(newRequest)
     const newResponse = new Response(response.body, response)
 
     // Set cookie if not present
